@@ -1,0 +1,64 @@
+[package]
+name = "visual-engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Workspace dependencies
+tokio = { workspace = true }
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+# Service-specific dependencies
+# Browser automation and screenshots
+fantoccini = "0.21"
+futures = "0.3"
+futures-util = "0.3"
+base64 = "0.22"
+
+# Image processing and comparison
+image = { version = "0.24", features = ["png", "jpeg"] }
+imageproc = "0.23"
+
+# File and storage handling
+tempfile = "3.8"
+bytes = "1.5"
+
+# Database integration
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "json"], default-features = false }
+
+# Configuration
+dotenvy = "0.15"
+
+# AWS S3/MinIO client
+aws-sdk-s3 = "1.0"
+aws-config = "1.0"
+
+# Local dependencies
+shared = { path = "../shared" }
+
+[[bin]]
+name = "visual-engine"
+path = "src/main.rs"
+
+[[bin]]
+name = "test-visual-engine"
+path = "src/bin/test_visual_engine.rs"
+
+[[bin]]
+name = "simple-server"
+path = "src/bin/simple_server.rs"
+
+[[bin]]
+name = "test-browser"
+path = "src/bin/test_browser.rs"

@@ -1,0 +1,50 @@
+# Core FastAPI and web framework
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.2
+pydantic-settings==2.1.0
+
+# HTTP client for service communication
+httpx==0.25.2
+requests==2.31.0
+
+# Computer Vision and Image Processing
+opencv-python==4.8.1.78
+opencv-contrib-python==4.8.1.78
+Pillow==10.1.0
+scikit-image==0.22.0
+numpy==1.25.2
+scipy==1.11.4
+
+# OCR (Optical Character Recognition)
+pytesseract==0.3.10
+easyocr==1.7.0
+
+# Image analysis and processing
+matplotlib==3.8.2
+seaborn==0.13.0
+imageio==2.33.1
+
+# File handling and utilities
+python-multipart==0.0.6
+aiofiles==23.2.1
+
+# Database and caching
+aioredis==2.0.1
+asyncpg==0.29.0
+sqlalchemy==2.0.23
+
+# Logging and configuration
+structlog==23.2.0
+python-dotenv==1.0.0
+
+# Color analysis and accessibility
+colorspacious==1.1.2
+colorthief==0.2.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Date handling
+python-dateutil==2.8.2

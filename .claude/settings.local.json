@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(docker exec:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/setup_webdriver.sh:*)",
+      "Bash(cd:*)",
+      "Bash(cd:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo run:*)",
+      "Bash(python3:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(python test:*)",
+      "Bash(python:*)",
+      "Bash(mv:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(docker compose:*)",
+      "Bash(grep:*)",
+      "Bash(RUST_LOG=debug cargo run --bin visual-engine)",
+      "Bash(RUST_LOG=info cargo run --bin visual-engine)",
+      "Bash(timeout 10 cargo run --bin visual-engine)",
+      "Bash(AWS_EC2_METADATA_DISABLED=true timeout 15 cargo run --bin visual-engine)",
+      "Bash(pkill:*)",
+      "Bash(timeout:*)",
+      "Bash(true)",
+      "Bash(rm:*)",
+      "Bash(pip3 install:*)",
+      "Bash(./start.sh:*)",
+      "Bash(cargo:*)",
+      "Bash(ls:*)",
+      "Bash(pgrep:*)"
+    ],
+    "deny": []
+  }
+}

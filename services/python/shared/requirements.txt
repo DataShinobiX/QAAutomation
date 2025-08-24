@@ -1,0 +1,28 @@
+# Shared Python dependencies for AI/Integration services
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.2
+httpx==0.25.2
+requests==2.31.0
+
+# Database and async support
+asyncpg==0.29.0
+sqlalchemy==2.0.23
+asyncio-mqtt==0.16.1
+
+# Environment and configuration
+python-dotenv==1.0.0
+pydantic-settings==2.1.0
+
+# Logging and monitoring
+structlog==23.2.0
+prometheus-client==0.19.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Common utilities
+python-dateutil==2.8.2
+pytz==2023.3

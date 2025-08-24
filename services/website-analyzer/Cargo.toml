@@ -1,0 +1,47 @@
+[package]
+name = "website-analyzer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Workspace dependencies
+tokio = { workspace = true }
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+# Service-specific dependencies
+scraper = "0.18"
+url = "2.4"
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "json"], default-features = false }
+dotenvy = "0.15"
+
+# Browser automation and screenshots
+fantoccini = "0.21"
+futures = "0.3"
+futures-util = "0.3"
+base64 = "0.22"
+
+# Local dependencies
+shared = { path = "../shared" }
+
+[[bin]]
+name = "website-analyzer"
+path = "src/main.rs"
+
+[[bin]]
+name = "test-analyzer"
+path = "src/bin/test_analyzer.rs"
+
+[[bin]]
+name = "test-browser-analyzer"
+path = "src/bin/test_browser_analyzer.rs"

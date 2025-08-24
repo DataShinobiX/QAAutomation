@@ -1,0 +1,282 @@
+# QA Automation Platform - Git Ignore Configuration
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.pyc
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Node.js (if any frontend components)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+postgresql/
+redis/
+minio/
+
+# Logs
+*.log
+logs/
+*.log.*
+/logs/
+**/*.log
+**/*.log.*
+services/*/logs/
+services/*/*.log
+
+# Temporary files
+/tmp/
+temp/
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.externalToolBuilders/
+*.launch
+.pydevproject
+.cproject
+.autotools
+.factorypath
+.buildpath
+.target
+.tern-project
+.texlipse
+.springBeans
+.recommenders/
+.apt_generated/
+.cache
+.scala_dependencies
+.worksheet
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+junit/
+test-results/
+
+# Documentation builds
+docs/_build/
+site/
+
+# PyCharm
+.idea/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Service-specific ignores
+services/rust/*/target/
+services/python/*/venv/
+services/python/*/*.log
+services/python/*/logs/
+services/python/*/.pytest_cache/
+services/python/*/__pycache__/
+
+# Upload directories
+uploads/
+temp_uploads/
+documents/
+parsed_docs/
+screenshots/
+test_results/
+reports/
+
+# MinIO data
+minio_data/
+.minio/
+
+# PostgreSQL data
+postgres_data/
+
+# Redis data
+redis_data/
+
+# Chrome/WebDriver files
+chromedriver
+geckodriver
+*.crx
+chrome_user_data/
+webdriver_downloads/
+
+# Test artifacts
+test_screenshots/
+test_videos/
+test_reports/
+performance_logs/
+
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+secrets/
+credentials.json
+auth_tokens.json
+
+# Cache directories
+.cache/
+cache/
+*.cache
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Lock files (except for specific package managers)
+*.lock
+!Cargo.lock
+!package-lock.json
+!yarn.lock
+
+# Service startup scripts logs
+start_*.log
+stop_*.log
+
+# Figma cache
+figma_cache/
+
+# AI model cache
+model_cache/
+llm_cache/
+
+# Large files that shouldn't be in git
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+large_files/
+
+# Configuration overrides
+config.local.*
+local_config.*
+override.*
+
+# Runtime files
+*.pid
+run/
+pids/

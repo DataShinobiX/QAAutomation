@@ -1,0 +1,33 @@
+# Figma Integration Service Dependencies
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.2
+pydantic-settings==2.1.0
+httpx==0.25.2
+requests==2.31.0
+
+# Figma API integration
+aiofiles==23.2.1
+
+# Image processing for Figma assets
+Pillow==10.1.0
+
+# Caching
+aioredis==2.0.1
+
+# Environment and configuration
+python-dotenv==1.0.0
+
+# Logging
+structlog==23.2.0
+
+# Database
+asyncpg==0.29.0
+sqlalchemy==2.0.23
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Utilities
+python-dateutil==2.8.2

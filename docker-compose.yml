@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: qa_postgres
+    environment:
+      POSTGRES_DB: qa_automation
+      POSTGRES_USER: qa_user
+      POSTGRES_PASSWORD: qa_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qa_user -d qa_automation"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: qa_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  minio:
+    image: minio/minio:latest
+    container_name: qa_minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  website-analyzer:
+    build: 
+      context: .
+      dockerfile: services/website-analyzer/Dockerfile
+    container_name: website_analyzer
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://qa_user:qa_password@postgres:5432/qa_automation
+      - REDIS_URL=redis://redis:6379
+      - RUST_LOG=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: services/website-analyzer/src
+        - action: rebuild  
+          path: services/shared/src
+
+  # Python AI Services
+  figma-service:
+    build:
+      context: services/python/figma-service
+      dockerfile: Dockerfile
+    container_name: figma_service
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://qa_user:qa_password@postgres:5432/qa_automation
+      - REDIS_URL=redis://redis:6379
+      - FIGMA_TOKEN=figd_TuV6YUR2EoMSudxJBsnWgrRSGk0tSqLaAmTu0tYP
+      - FIGMA_FILE_KEY=vXiPQiMd1ESraq6wpn1bot
+      - WEBSITE_ANALYZER_URL=http://website-analyzer:3001
+      - VISUAL_ENGINE_URL=http://visual-engine:3002
+      - TEST_EXECUTOR_URL=http://test-executor:3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./services/python:/app
+    develop:
+      watch:
+        - action: rebuild
+          path: services/python/figma-service/
+        - action: rebuild  
+          path: services/python/shared/
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
