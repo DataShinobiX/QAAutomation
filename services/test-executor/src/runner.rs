@@ -53,7 +53,10 @@ impl TestRunner {
         url: &str,
         test_cases: Vec<TestCase>,
     ) -> Result<TestExecution> {
-        info!("Starting test suite execution: {} with {} tests", test_suite_id, test_cases.len());
+        info!("🚀 Starting test suite execution: {} with {} tests", test_suite_id, test_cases.len());
+        info!("Target URL: {}", url);
+        info!("Browser config - Headless: {}, Viewport: {:?}, Timeout: {}ms", 
+              self.config.headless, self.config.viewport, self.config.timeout_ms);
         
         let mut execution = TestExecution {
             id: Uuid::new_v4(),
@@ -70,22 +73,31 @@ impl TestRunner {
         };
 
         // Start browser session
+        info!("🌐 Starting browser session...");
         let client = match self.browser_controller.start_browser_session().await {
-            Ok(client) => client,
+            Ok(client) => {
+                info!("✅ Browser session started successfully");
+                client
+            },
             Err(e) => {
-                error!("Failed to start browser session: {}", e);
+                error!("❌ Failed to start browser session: {}", e);
+                if e.to_string().contains("Connection refused") {
+                    error!("💡 ChromeDriver is not running. Start it with: chromedriver --port=4444");
+                }
                 execution.status = ExecutionStatus::Failed;
                 return Ok(execution);
             }
         };
 
         // Navigate to the target URL
+        info!("🧭 Navigating to URL: {}", url);
         if let Err(e) = client.goto(url).await {
-            error!("Failed to navigate to {}: {}", url, e);
+            error!("❌ Failed to navigate to {}: {}", url, e);
             execution.status = ExecutionStatus::Failed;
             let _ = self.browser_controller.close_browser_session(client).await;
             return Ok(execution);
         }
+        info!("✅ Successfully navigated to {}", url);
 
         // Wait for initial page load
         if let Err(e) = self.browser_controller.wait_for_page_load(&client).await {
@@ -93,13 +105,30 @@ impl TestRunner {
         }
 
         // Execute each test case
-        for test_case in test_cases {
+        info!("🧪 Executing {} test cases...", test_cases.len());
+        for (i, test_case) in test_cases.iter().enumerate() {
+            info!("📋 Executing test {}/{}: '{}'", i + 1, test_cases.len(), test_case.name);
             let test_result = self.execute_test_case(&client, &test_case).await;
             
             match test_result.status {
-                TestStatus::Passed => execution.passed_tests += 1,
-                TestStatus::Failed | TestStatus::Error => execution.failed_tests += 1,
-                TestStatus::Skipped => execution.skipped_tests += 1,
+                TestStatus::Passed => {
+                    info!("✅ Test '{}' PASSED", test_case.name);
+                    execution.passed_tests += 1;
+                },
+                TestStatus::Failed => {
+                    error!("❌ Test '{}' FAILED: {}", test_case.name, 
+                          test_result.error_message.as_deref().unwrap_or("No error message"));
+                    execution.failed_tests += 1;
+                },
+                TestStatus::Error => {
+                    error!("🚨 Test '{}' ERROR: {}", test_case.name, 
+                          test_result.error_message.as_deref().unwrap_or("No error message"));
+                    execution.failed_tests += 1;
+                },
+                TestStatus::Skipped => {
+                    warn!("⏭️ Test '{}' SKIPPED", test_case.name);
+                    execution.skipped_tests += 1;
+                },
                 _ => {}
             }
             

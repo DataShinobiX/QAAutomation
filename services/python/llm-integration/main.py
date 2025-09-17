@@ -100,13 +100,19 @@ async def health_check():
     provider_status = await llm_manager.get_provider_status()
     dependencies.update(provider_status)
     
-    overall_status = ServiceStatus.HEALTHY
-    if ServiceStatus.UNHEALTHY in dependencies.values():
+    # Service is healthy if at least one provider is healthy
+    healthy_providers = [status for status in dependencies.values() if status == ServiceStatus.HEALTHY]
+    
+    if len(healthy_providers) > 0:
+        overall_status = ServiceStatus.HEALTHY
+        if ServiceStatus.DEGRADED in dependencies.values():
+            overall_status = ServiceStatus.DEGRADED
+    else:
         overall_status = ServiceStatus.UNHEALTHY
-    elif ServiceStatus.DEGRADED in dependencies.values():
-        overall_status = ServiceStatus.DEGRADED
     
     return HealthResponse(
+        success=overall_status == ServiceStatus.HEALTHY,
+        message=f"LLM Integration Service is {overall_status.value}",
         status=overall_status,
         version="0.1.0",
         uptime=0,  # TODO: implement uptime tracking

@@ -36,7 +36,25 @@
       "Bash(./start.sh:*)",
       "Bash(cargo:*)",
       "Bash(ls:*)",
-      "Bash(pgrep:*)"
+      "Bash(pgrep:*)",
+      "Bash(cp:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(./node_modules/.bin/tailwindcss:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run dev:*)",
+      "Bash(bash:*)",
+      "Bash(./start_backend.sh:*)",
+      "Bash(./start_backend_working.sh:*)",
+      "Bash(docker-compose:*)",
+      "Bash(kill:*)",
+      "Bash(./fix_database.sh:*)",
+      "Bash(./quick_start.sh:*)",
+      "Bash(docker ps:*)",
+      "Bash(DATABASE_URL=\"postgresql://qa_user:qa_password@localhost:5433/qa_automation\" cargo run --bin website-analyzer)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }

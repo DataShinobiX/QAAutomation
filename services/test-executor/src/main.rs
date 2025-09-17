@@ -76,15 +76,58 @@ async fn execute_test_suite(
     State(state): State<AppState>,
     Json(request): Json<ExecuteTestSuiteRequest>,
 ) -> Result<Json<ExecuteTestSuiteResponse>, StatusCode> {
-    info!("Executing test suite: {}", request.test_suite.name);
+    info!("=== TEST SUITE EXECUTION REQUEST ===");
+    info!("Test suite name: {}", request.test_suite.name);
+    info!("Test suite ID: {}", request.test_suite.id);
+    info!("Target URL: {}", request.test_suite.url);
+    info!("Number of test cases: {}", request.test_suite.test_cases.len());
+    
+    // Log each test case for debugging
+    for (i, test_case) in request.test_suite.test_cases.iter().enumerate() {
+        info!("Test case {}: '{}' (type: {:?})", i + 1, test_case.name, test_case.test_type);
+        if let Some(target) = &test_case.target_element {
+            info!("  Target element: {}", target);
+        }
+        if let Some(expected) = &test_case.expected_value {
+            info!("  Expected value: {}", expected);
+        }
+        info!("  Actions count: {}", test_case.actions.len());
+    }
 
     match state.executor.execute_test_suite(request.test_suite).await {
         Ok(execution) => {
-            info!("Test suite execution completed: {}", execution.id);
+            info!("✅ Test suite execution completed successfully!");
+            info!("Execution ID: {}", execution.id);
+            info!("Status: {:?}", execution.status);
+            info!("Total tests: {}", execution.total_tests);
+            info!("Passed: {}", execution.passed_tests);
+            info!("Failed: {}", execution.failed_tests);
+            info!("Skipped: {}", execution.skipped_tests);
+            
+            // Log individual test results
+            for result in &execution.test_results {
+                info!("Test '{}': {:?} (duration: {:?}ms)", 
+                     result.test_name, result.status, result.duration_ms);
+                if let Some(error) = &result.error_message {
+                    error!("  Error: {}", error);
+                }
+            }
+            
             Ok(Json(ExecuteTestSuiteResponse { execution }))
         }
         Err(e) => {
-            error!("Test suite execution failed: {}", e);
+            error!("❌ Test suite execution failed: {}", e);
+            error!("Error details: {:?}", e);
+            
+            // Check for common failure causes
+            if e.to_string().contains("WebDriver") {
+                error!("💡 WebDriver issue detected. Make sure ChromeDriver is running on port 4444");
+                error!("   Run: chromedriver --port=4444 --whitelisted-ips=");
+            }
+            if e.to_string().contains("timeout") {
+                error!("💡 Timeout detected. Consider increasing timeout or checking target URL");
+            }
+            
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

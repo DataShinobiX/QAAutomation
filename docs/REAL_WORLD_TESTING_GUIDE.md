@@ -20,7 +20,7 @@ cd /Users/paritoshsingh/Documents/codes/vs\ code/Opticus/QAAutomation
 docker compose up -d postgres redis minio
 
 # Start Rust core services (in separate terminals)
-cargo run --bin website-analyzer     # Port 3001
+WEBDRIVER_URL=http://localhost:4444 DATABASE_URL="postgresql://qa_user:qa_password@localhost:5433/qa_automation" RUST_LOG=info cargo run --bin website-analyzer > website-analyzer-with-selenium.log     # Port 3001
 cargo run --bin visual-engine        # Port 3002  
 cargo run --bin test-executor        # Port 3003
 

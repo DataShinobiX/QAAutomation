@@ -288,10 +288,21 @@ class LLMProviderManager:
         provider = self.providers[provider_name]
         return await provider.generate_text(request)
     
-    def _get_provider_name(self, provider: LLMProvider) -> str:
-        """Map LLMProvider enum to internal provider names"""
+    def _get_provider_name(self, provider) -> str:
+        """Map provider to internal provider names"""
+        # Handle both string and enum inputs
+        if isinstance(provider, str):
+            if provider in ["azure_openai", "openai"]:
+                return "azure_openai"
+            elif provider == "anthropic":
+                return "anthropic"
+            else:
+                return "azure_openai"  # Default to Azure OpenAI
+        
+        # Handle enum inputs
         mapping = {
             LLMProvider.OPENAI: "azure_openai",
+            LLMProvider.AZURE_OPENAI: "azure_openai",
             LLMProvider.ANTHROPIC: "anthropic"
         }
         return mapping.get(provider, "azure_openai")

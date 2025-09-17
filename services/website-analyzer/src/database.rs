@@ -11,7 +11,12 @@ pub struct DatabasePool {
 
 impl DatabasePool {
     pub async fn new(database_url: &str) -> Result<Self> {
-        let pool = PgPool::connect(database_url)
+        use sqlx::postgres::PgPoolOptions;
+        
+        let pool = PgPoolOptions::new()
+            .max_connections(10)
+            .acquire_timeout(std::time::Duration::from_secs(30))
+            .connect(database_url)
             .await
             .context("Failed to connect to database")?;
 

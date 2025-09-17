@@ -329,21 +329,41 @@ async def execute_workflow(workflow_id: str, request: IntegrationRequest):
         # Execute integrated workflow
         result = await integrator.run_integrated_workflow(request)
         
-        # Update progress during execution
-        status.current_step = "Authentication"
-        status.progress = 20.0
-        await asyncio.sleep(0.1)  # Allow status updates
+        # Enhanced progress tracking for complete workflow
+        if request.credentials:
+            status.current_step = "🔐 Authentication"
+            status.progress = 15.0
+            await asyncio.sleep(0.1)
         
-        status.current_step = "Website analysis"
-        status.progress = 40.0
+        status.current_step = "🔍 Website analysis"
+        status.progress = 25.0
         await asyncio.sleep(0.1)
         
-        status.current_step = "AI processing"
-        status.progress = 70.0
+        if request.figma_file_key:
+            status.current_step = "🎨 Design analysis (Figma)"
+            status.progress = 40.0
+            await asyncio.sleep(0.1)
+        
+        if request.requirements_data:
+            status.current_step = "📄 Requirements analysis"
+            status.progress = 50.0
+            await asyncio.sleep(0.1)
+        
+        status.current_step = "🤖 AI-powered test generation"
+        status.progress = 65.0
         await asyncio.sleep(0.1)
         
-        status.current_step = "Test generation"
-        status.progress = 90.0
+        if request.workflow_type == "full_analysis":
+            status.current_step = "🧪 Test execution"
+            status.progress = 80.0
+            await asyncio.sleep(0.1)
+            
+            status.current_step = "🔬 AI analysis of results"
+            status.progress = 90.0
+            await asyncio.sleep(0.1)
+        
+        status.current_step = "📊 Generating comprehensive report"
+        status.progress = 95.0
         await asyncio.sleep(0.1)
         
         # Store results
@@ -381,6 +401,19 @@ class QuickTestRequest(BaseModel):
     url: str = Field(..., description="URL of the website to test")
     credentials: Optional[Dict[str, Any]] = None
 
+class CompleteQARequest(BaseModel):
+    """Complete QA automation request matching your desired flow"""
+    url: str = Field(..., description="Target URL for testing")
+    figma_file_key: Optional[str] = Field(None, description="Figma file key for design analysis")
+    credentials: Optional[Dict[str, Any]] = Field(None, description="Authentication credentials (username, password, etc.)")
+    requirements_document: Optional[Dict[str, Any]] = Field(None, description="Requirements document data")
+    user_stories: Optional[List[str]] = Field(None, description="List of user stories")
+    business_requirements: Optional[List[str]] = Field(None, description="List of business requirements")
+    test_scope: str = Field("full_analysis", description="Scope of testing (full_analysis, design_only, requirements_only)")
+    include_accessibility: bool = Field(True, description="Include accessibility testing")
+    include_performance: bool = Field(True, description="Include performance testing")
+    authentication_flow: Optional[Dict[str, Any]] = Field(None, description="Custom authentication flow configuration")
+
 @app.post("/workflows/quick-test")
 async def quick_test_workflow(
     request: QuickTestRequest  # Request body
@@ -413,6 +446,69 @@ async def quick_test_workflow(
     except Exception as e:
         logger.error("Quick test workflow failed", url=request.url, error=str(e))
         raise HTTPException(status_code=500, detail=f"Quick test failed: {str(e)}")
+
+@app.post("/workflows/complete-qa")
+async def complete_qa_workflow(request: CompleteQARequest) -> Dict[str, Any]:
+    """Run complete QA automation workflow matching your exact requirements"""
+    
+    workflow_id = str(uuid.uuid4())
+    
+    # Initialize workflow status
+    workflow_status = WorkflowStatus(
+        workflow_id=workflow_id,
+        status="initializing",
+        progress=0.0,
+        current_step="Initializing complete QA workflow",
+        start_time=datetime.utcnow()
+    )
+    active_workflows[workflow_id] = workflow_status
+    
+    try:
+        # Prepare comprehensive requirements data
+        requirements_data = None
+        if request.requirements_document or request.user_stories or request.business_requirements:
+            requirements_data = {
+                "document_data": request.requirements_document,
+                "user_stories": request.user_stories or [],
+                "business_requirements": request.business_requirements or []
+            }
+        
+        # Create comprehensive integration request
+        integration_request = IntegrationRequest(
+            url=request.url,
+            credentials=request.credentials,
+            figma_file_key=request.figma_file_key,
+            requirements_data=requirements_data,
+            workflow_type=request.test_scope
+        )
+        
+        # Start workflow in background
+        asyncio.create_task(execute_workflow(workflow_id, integration_request))
+        
+        return {
+            "workflow_id": workflow_id,
+            "status": "started",
+            "message": "Complete QA automation workflow initiated successfully",
+            "estimated_duration": "5-15 minutes (depending on scope)",
+            "workflow_steps": [
+                "Authentication (if credentials provided)",
+                "Website analysis",
+                "Design analysis (if Figma provided)", 
+                "Requirements analysis (if documents provided)",
+                "AI-powered test generation",
+                "Test execution",
+                "AI analysis of results",
+                "Comprehensive report generation"
+            ],
+            "monitoring_url": f"/workflows/{workflow_id}/status",
+            "results_url": f"/workflows/{workflow_id}/results"
+        }
+        
+    except Exception as e:
+        logger.error("Failed to start complete QA workflow", workflow_id=workflow_id, error=str(e))
+        workflow_status.status = "failed"
+        workflow_status.current_step = f"Failed to start: {str(e)}"
+        raise HTTPException(status_code=500, detail=f"Failed to start complete QA workflow: {str(e)}")
 
 if __name__ == "__main__":
     logger.info("Starting Unified Workflow Orchestrator Service",

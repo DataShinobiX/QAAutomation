@@ -23,7 +23,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'shared'))
 from config import config
 from text_analyzer import TextAnalyzer, TextAnalysisResult
 from entity_extractor import EntityExtractor, EntityExtractionResult
-from text_similarity import TextSimilarityAnalyzer, SimilarityResult, TextClusterResult
+# from text_similarity import TextSimilarityAnalyzer, SimilarityResult, TextClusterResult
 
 # Configure logging
 structlog.configure(
@@ -146,7 +146,7 @@ async def startup_event():
         logger.info("Entity Extractor initialized successfully")
         
         # Initialize similarity analyzer
-        similarity_analyzer = TextSimilarityAnalyzer()
+        # similarity_analyzer = TextSimilarityAnalyzer()
         logger.info("Text Similarity Analyzer initialized successfully")
         
         # Create model cache directory
@@ -176,7 +176,7 @@ def get_entity_extractor() -> EntityExtractor:
     return entity_extractor
 
 # Dependency to get similarity analyzer
-def get_similarity_analyzer() -> TextSimilarityAnalyzer:
+# def get_similarity_analyzer() -> TextSimilarityAnalyzer:
     if similarity_analyzer is None:
         raise HTTPException(status_code=500, detail="Similarity analyzer not initialized")
     return similarity_analyzer

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -9,7 +7,7 @@ services:
       POSTGRES_USER: qa_user
       POSTGRES_PASSWORD: qa_password
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infrastructure/sql:/docker-entrypoint-initdb.d
@@ -23,7 +21,7 @@ services:
     image: redis:7-alpine
     container_name: qa_redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -39,8 +37,8 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9002:9000"
+      - "9003:9001"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -49,6 +47,26 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  selenium:
+    image: seleniarm/standalone-chromium:latest
+    container_name: qa_selenium
+    ports:
+      - "4444:4444"
+    shm_size: 2gb
+    environment:
+      - SE_OPTS=--log-level INFO
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    volumes:
+      - /dev/shm:/dev/shm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   website-analyzer:
     build: 
@@ -60,11 +78,14 @@ services:
     environment:
       - DATABASE_URL=postgresql://qa_user:qa_password@postgres:5432/qa_automation
       - REDIS_URL=redis://redis:6379
+      - WEBDRIVER_URL=http://selenium:4444
       - RUST_LOG=info
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      selenium:
         condition: service_healthy
     develop:
       watch:
@@ -84,7 +105,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://qa_user:qa_password@postgres:5432/qa_automation
       - REDIS_URL=redis://redis:6379
-      - FIGMA_TOKEN=figd_TuV6YUR2EoMSudxJBsnWgrRSGk0tSqLaAmTu0tYP
+      - FIGMA_TOKEN=${FIGMA_TOKEN}
       - FIGMA_FILE_KEY=vXiPQiMd1ESraq6wpn1bot
       - WEBSITE_ANALYZER_URL=http://website-analyzer:3001
       - VISUAL_ENGINE_URL=http://visual-engine:3002

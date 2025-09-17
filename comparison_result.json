@@ -1,0 +1,1 @@
+{"success":true,"message":"Comparison completed successfully","service_name":"figma-service","comparison":{"figma_frame":"Sign Up","website_url":"https://demo.validdo.com/signup","issues":[{"type":"color_mismatch","message":"Colors missing in implementation: ['#002619']"}],"matches":[],"score":90}}

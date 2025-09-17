@@ -19,10 +19,10 @@ class BaseServiceConfig(BaseSettings):
     port: int = 8000
     
     # Database
-    database_url: Optional[str] = "postgresql://qa_user:qa_password@localhost:5432/qa_automation"
+    database_url: Optional[str] = "postgresql://qa_user:qa_password@localhost:5433/qa_automation"
     
     # Redis for caching
-    redis_url: Optional[str] = "redis://localhost:6379"
+    redis_url: Optional[str] = "redis://localhost:6380"
     
     # External services
     website_analyzer_url: str = "http://localhost:3001"
@@ -48,6 +48,7 @@ class BaseServiceConfig(BaseSettings):
     class Config:
         env_file = ".env"
         env_prefix = ""
+        extra = "ignore"  # Ignore extra environment variables
 
 
 class FigmaServiceConfig(BaseServiceConfig):
@@ -101,8 +102,8 @@ class LLMIntegrationConfig(BaseServiceConfig):
     service_name: str = "llm-integration"
     port: int = 8005
     
-    # Default LLM settings
-    default_provider: str = "openai"
+    # Default LLM settings - Use Azure OpenAI as default
+    default_provider: str = "azure_openai"
     default_model: str = "gpt-4"
     max_tokens: int = 2000
     temperature: float = 0.7
@@ -113,6 +114,16 @@ class LLMIntegrationConfig(BaseServiceConfig):
     
     # Service URLs
     figma_service_url: str = "http://localhost:8001"
+    
+    # Azure OpenAI specific settings
+    azure_openai_api_key: Optional[str] = None
+    azure_openai_endpoint: Optional[str] = None
+    azure_openai_deployment: str = "gpt-4o"
+    
+    class Config:
+        env_file = ".env"
+        env_prefix = ""
+        extra = "ignore"  # Ignore extra environment variables
 
 
 class OrchestratorConfig(BaseServiceConfig):

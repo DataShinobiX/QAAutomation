@@ -14,6 +14,7 @@ from collections import defaultdict
 import spacy
 from spacy.matcher import Matcher
 from spacy.util import filter_spans
+from spacy.tokens import Doc
 import en_core_web_sm
 
 # Add shared modules to path
@@ -280,7 +281,7 @@ class EntityExtractor:
     
     async def _extract_builtin_entities(
         self,
-        doc: spacy.Doc,
+        doc: Doc,
         confidence_threshold: float
     ) -> List[Dict[str, Any]]:
         """Extract built-in spaCy entities"""
@@ -306,7 +307,7 @@ class EntityExtractor:
         
         return entities
     
-    async def _extract_custom_entities(self, doc: spacy.Doc) -> List[Dict[str, Any]]:
+    async def _extract_custom_entities(self, doc: Doc) -> List[Dict[str, Any]]:
         """Extract entities using custom patterns"""
         entities = []
         
@@ -336,7 +337,7 @@ class EntityExtractor:
     async def _post_process_entities(
         self,
         entities: List[Dict[str, Any]],
-        doc: spacy.Doc
+        doc: Doc
     ) -> List[Dict[str, Any]]:
         """Post-process entities to remove overlaps and improve quality"""
         
@@ -374,7 +375,7 @@ class EntityExtractor:
         
         return non_overlapping
     
-    def _get_entity_context(self, entity: Dict[str, Any], doc: spacy.Doc) -> Dict[str, Any]:
+    def _get_entity_context(self, entity: Dict[str, Any], doc: Doc) -> Dict[str, Any]:
         """Get contextual information around an entity"""
         start_char = entity["start_char"]
         end_char = entity["end_char"]
@@ -482,7 +483,7 @@ class EntityExtractor:
         self,
         entity1: Dict[str, Any],
         entity2: Dict[str, Any],
-        doc: spacy.Doc
+        doc: Doc
     ) -> Optional[str]:
         """Determine the type of relationship between two entities"""
         

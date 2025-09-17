@@ -57,18 +57,20 @@ class IntelligentTestGenerator:
             figma_analysis, target_url, provider, model
         )
         
-        # Generate edge cases
-        edge_cases = await self._generate_edge_cases_from_design(
-            figma_analysis, provider, model
-        )
+        # Skip edge cases for minimal processing
+        edge_cases = []
+        
+        # Convert Pydantic objects to dictionaries for API response
+        ui_tests_dict = [test.dict() for test in ui_tests]
+        scenarios_dict = [scenario.dict() for scenario in (test_scenarios + edge_cases)]
         
         test_suite = TestSuite(
             name=f"AI-Generated Tests - {figma_analysis.get('name', 'Figma Design')}",
             description=f"Intelligent tests generated from Figma design analysis using {provider}",
             url=target_url,
             figma_file_key=figma_file_key,
-            ui_tests=ui_tests,
-            scenarios=test_scenarios + edge_cases
+            ui_tests=ui_tests_dict,
+            scenarios=scenarios_dict
         )
         
         logger.info("Generated intelligent test suite from Figma",
@@ -325,24 +327,48 @@ class IntelligentTestGenerator:
         if not frames:
             return []
         
-        # Analyze key frames for user flows
-        key_frames = frames[:5]  # Limit to avoid token limits
+        # Process only 1 frame and 1 component to minimize token usage
+        if not frames:
+            return []
+        
+        first_frame = frames[0]
+        components = first_frame.get("components", [])
+        
+        if not components:
+            return []
+        
+        # Use only the first component for minimal processing
+        first_component = components[0]
+        
+        # Create minimal component summary
+        component_summary = {
+            "frame_name": first_frame.get("name", "Main Frame"),
+            "component": {
+                "name": first_component.get("name", "Unknown Component"),
+                "type": first_component.get("type", "Unknown"),
+                "has_text": bool(first_component.get("characters")),
+                "is_interactive": any(keyword in first_component.get("name", "").lower() 
+                                   for keyword in ["button", "input", "link", "field", "form"])
+            },
+            "design_context": {
+                "design_name": figma_analysis.get("name", "Design"),
+                "target_url": target_url,
+                "total_frames": len(frames),
+                "total_components": len(components)
+            }
+        }
         
         prompt = await self.prompt_manager.get_prompt(
-            "figma_scenario_generation",
-            {
-                "frames": json.dumps(key_frames, indent=2),
-                "target_url": target_url,
-                "design_name": figma_analysis.get("name", "Design")
-            }
+            "figma_minimal_scenario_generation",
+            component_summary
         )
         
         request = LLMRequest(
             provider=LLMProvider(provider),
             model=model,
             prompt=prompt,
-            max_tokens=2000,
-            temperature=0.6
+            max_tokens=500,  # Reduced for faster processing
+            temperature=0.3  # Lower temperature for more focused output
         )
         
         response = await self.llm_manager.generate_text(request)
@@ -374,15 +400,32 @@ class IntelligentTestGenerator:
         if not frames:
             return []
         
-        # Focus on first frame for UI tests
+        # Use only 1 component for minimal UI test generation
         first_frame = frames[0]
         components = first_frame.get("components", [])
         
+        if not components:
+            return []
+        
+        # Process only the first component
+        first_component = components[0]
+        
+        # Create minimal component data for UI test generation
+        minimal_component = {
+            "name": first_component.get("name", "Unknown"),
+            "type": first_component.get("type", "Unknown"),
+            "has_text": bool(first_component.get("characters")),
+            "text_content": first_component.get("characters", "")[:100] if first_component.get("characters") else "",
+            "is_interactive": any(keyword in first_component.get("name", "").lower() 
+                               for keyword in ["button", "input", "link", "field", "form"])
+        }
+        
         prompt = await self.prompt_manager.get_prompt(
-            "ui_test_generation",
+            "ui_test_minimal_generation",
             {
-                "components": json.dumps(components[:10], indent=2),  # Limit components
-                "frame_name": first_frame.get("name", "Main Frame")
+                "component": minimal_component,
+                "frame_name": first_frame.get("name", "Main Frame"),
+                "target_url": target_url
             }
         )
         
@@ -390,8 +433,8 @@ class IntelligentTestGenerator:
             provider=LLMProvider(provider),
             model=model,
             prompt=prompt,
-            max_tokens=1500,
-            temperature=0.4
+            max_tokens=300,  # Minimal tokens for single component
+            temperature=0.2  # Very focused output
         )
         
         response = await self.llm_manager.generate_text(request)
@@ -399,11 +442,16 @@ class IntelligentTestGenerator:
         
         ui_tests = []
         for test_data in ui_tests_data:
+            # Fix expected_value to always be string or None
+            expected_value = test_data.get("expected_value")
+            if expected_value is not None:
+                expected_value = str(expected_value)
+                
             ui_test = UITestCase(
                 component_name=test_data.get("component_name", "Generated Component"),
                 selector=test_data.get("selector", "*"),
                 test_type=test_data.get("test_type", "exists"),
-                expected_value=test_data.get("expected_value")
+                expected_value=expected_value
             )
             ui_tests.append(ui_test)
         

@@ -60,6 +60,51 @@ Output Format (JSON):
 Generate realistic, actionable test scenarios:
 """)
 
+        # Minimal Figma scenario generation prompt (single component)
+        self.prompts["figma_minimal_scenario_generation"] = Template("""
+You are a QA engineer analyzing a single UI component from a Figma design.
+
+Component Analysis:
+- Frame: {{ frame_name }}
+- Component Name: {{ component.name }}
+- Component Type: {{ component.type }}
+- Has Text: {{ component.has_text }}
+- Interactive: {{ component.is_interactive }}
+
+Design Context:
+- Design: {{ design_context.design_name }}
+- Target URL: {{ design_context.target_url }}
+- Total Frames: {{ design_context.total_frames }}
+- Total Components: {{ design_context.total_components }}
+
+Task: Generate 2-3 focused test scenarios for this single component.
+
+Requirements:
+1. Keep scenarios simple and focused
+2. Test the component's main functionality
+3. Include one positive and one edge case scenario
+4. Make tests actionable and specific
+
+Output Format (JSON):
+```json
+[
+  {
+    "name": "Component Functionality Test",
+    "description": "Test the main function of {{ component.name }}",
+    "steps": [
+      "Navigate to {{ design_context.target_url }}",
+      "Locate the {{ component.name }} component",
+      "Verify component is visible and accessible"
+    ],
+    "expected_result": "Component functions as expected",
+    "priority": "high"
+  }
+]
+```
+
+Generate focused test scenarios for this component:
+""")
+
         # UI test generation prompt
         self.prompts["ui_test_generation"] = Template("""
 You are a QA automation engineer creating UI test cases from Figma components.
@@ -95,6 +140,41 @@ Output Format (JSON):
 ```
 
 Generate specific UI test cases:
+""")
+
+        # Minimal UI test generation prompt (single component)
+        self.prompts["ui_test_minimal_generation"] = Template("""
+You are a QA automation engineer creating UI tests for a single component.
+
+Component Details:
+- Name: {{ component.name }}
+- Type: {{ component.type }}
+- Has Text: {{ component.has_text }}
+- Text Content: {{ component.text_content }}
+- Interactive: {{ component.is_interactive }}
+- Frame: {{ frame_name }}
+- Target URL: {{ target_url }}
+
+Task: Generate 1-2 specific UI test cases for this component only.
+
+Focus on:
+1. Element existence and visibility
+2. Text content if applicable
+3. Interaction capability if interactive
+
+Output Format (JSON):
+```json
+[
+  {
+    "component_name": "{{ component.name }}",
+    "selector": "button[data-testid='login-btn']",
+    "test_type": "exists",
+    "expected_value": null
+  }
+]
+```
+
+Generate focused UI test cases for this component:
 """)
 
         # Edge case generation prompt

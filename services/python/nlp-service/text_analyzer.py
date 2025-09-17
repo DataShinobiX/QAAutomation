@@ -14,6 +14,7 @@ from collections import Counter, defaultdict
 
 import spacy
 from spacy import displacy
+from spacy.tokens import Doc
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
@@ -287,7 +288,7 @@ class TextAnalyzer:
             logger.warning("Language detection failed", error=str(e))
             return "en"
     
-    async def _calculate_text_statistics(self, text: str, doc: spacy.Doc) -> Dict[str, Any]:
+    async def _calculate_text_statistics(self, text: str, doc: Doc) -> Dict[str, Any]:
         """Calculate basic text statistics"""
         words = [token.text for token in doc if token.is_alpha]
         sentences = list(doc.sents)
@@ -344,7 +345,7 @@ class TextAnalyzer:
         
         return max(1, syllable_count)  # Minimum 1 syllable per word
     
-    async def _extract_entities(self, doc: spacy.Doc) -> List[Dict[str, Any]]:
+    async def _extract_entities(self, doc: Doc) -> List[Dict[str, Any]]:
         """Extract named entities from document"""
         entities = []
         
@@ -530,7 +531,7 @@ class TextAnalyzer:
         else:
             return "Graduate"
     
-    async def _extract_keywords(self, text: str, doc: spacy.Doc) -> List[Dict[str, Any]]:
+    async def _extract_keywords(self, text: str, doc: Doc) -> List[Dict[str, Any]]:
         """Extract keywords using multiple methods"""
         keywords = []
         
@@ -603,7 +604,7 @@ class TextAnalyzer:
             logger.warning("Keyword extraction failed", error=str(e))
             return []
     
-    async def _analyze_linguistic_features(self, doc: spacy.Doc) -> Dict[str, Any]:
+    async def _analyze_linguistic_features(self, doc: Doc) -> Dict[str, Any]:
         """Analyze linguistic features and patterns"""
         features = {}
         

@@ -86,7 +86,12 @@ impl BrowserAnalyzer {
                 "--disable-dev-shm-usage",
                 "--disable-extensions",
                 "--disable-web-security",
-                "--window-size=1920,1080"
+                "--window-size=1920,1080",
+                "--ignore-certificate-errors",
+                "--allow-running-insecure-content",
+                "--disable-blink-features=AutomationControlled",
+                "--disable-features=VizDisplayCompositor",
+                "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
             ]
         });
         caps.insert("goog:chromeOptions".to_string(), chrome_opts);
@@ -117,8 +122,41 @@ impl BrowserAnalyzer {
             .await
             .context("Failed to wait for page body")?;
 
-        // Wait for network idle
-        sleep(Duration::from_millis(2000)).await;
+        // Extended wait for React SPAs
+        sleep(Duration::from_millis(3000)).await;
+        
+        // Check if this is a React app and wait for it to load
+        let is_react_app = self.check_if_react_app(&client).await.unwrap_or(false);
+        if is_react_app {
+            info!("Detected React SPA, waiting for app to fully load...");
+            
+            // Check for JavaScript errors first
+            self.check_js_errors(&client).await;
+            
+            // Wait for React root to have content with more attempts
+            for attempt in 1..=15 {
+                let has_content = self.check_react_content_loaded(&client).await.unwrap_or(false);
+                if has_content {
+                    info!("React app loaded successfully after {} attempts", attempt);
+                    break;
+                }
+                
+                // Log current state for debugging
+                if attempt % 3 == 0 {
+                    let current_content = self.get_current_dom_state(&client).await.unwrap_or_default();
+                    info!("Attempt {}/15 - Current DOM state: {}", attempt, current_content);
+                }
+                
+                info!("Waiting for React app to load... attempt {}/15", attempt);
+                sleep(Duration::from_millis(3000)).await; // Increased wait time
+            }
+            
+            // Final wait for any remaining network requests
+            sleep(Duration::from_millis(3000)).await;
+        } else {
+            // Standard wait for non-SPA sites
+            sleep(Duration::from_millis(2000)).await;
+        }
 
         let load_time = start_time.elapsed();
 
@@ -661,5 +699,88 @@ impl BrowserAnalyzer {
                 })
             })
             .collect())
+    }
+
+    async fn check_if_react_app(&self, client: &fantoccini::Client) -> Result<bool> {
+        let script = r#"
+            return !!(window.React || 
+                     window.__REACT_DEVTOOLS_GLOBAL_HOOK__ ||
+                     document.querySelector('[data-reactroot]') ||
+                     document.querySelector('#root') ||
+                     document.querySelector('#app') ||
+                     document.body.innerHTML.includes('react'));
+        "#;
+        
+        match client.execute(script, vec![]).await {
+            Ok(result) => Ok(result.as_bool().unwrap_or(false)),
+            Err(_) => Ok(false)
+        }
+    }
+
+    async fn check_react_content_loaded(&self, client: &fantoccini::Client) -> Result<bool> {
+        let script = r#"
+            const root = document.querySelector('#root');
+            if (!root) return false;
+            
+            // Check if root has meaningful content (not just the noscript message)
+            const hasContent = root.children.length > 0 && 
+                              root.textContent.trim().length > 100 &&
+                              !root.textContent.includes('You need to enable JavaScript');
+            
+            // Also check for common React indicators
+            const hasReactElements = document.querySelector('[data-testid]') ||
+                                   document.querySelector('.react-') ||
+                                   document.querySelectorAll('div').length > 5 ||
+                                   document.querySelector('input') ||
+                                   document.querySelector('form') ||
+                                   document.querySelector('button');
+            
+            return hasContent || hasReactElements;
+        "#;
+        
+        match client.execute(script, vec![]).await {
+            Ok(result) => Ok(result.as_bool().unwrap_or(false)),
+            Err(_) => Ok(false)
+        }
+    }
+
+    async fn check_js_errors(&self, client: &fantoccini::Client) {
+        let script = r#"
+            const errors = [];
+            const originalError = window.console.error;
+            window.console.error = function(...args) {
+                errors.push(args.join(' '));
+                originalError.apply(console, args);
+            };
+            return errors;
+        "#;
+        
+        if let Ok(result) = client.execute(script, vec![]).await {
+            if let Some(errors) = result.as_array() {
+                if !errors.is_empty() {
+                    info!("JavaScript errors detected: {:?}", errors);
+                }
+            }
+        }
+    }
+
+    async fn get_current_dom_state(&self, client: &fantoccini::Client) -> Result<String> {
+        let script = r#"
+            const root = document.querySelector('#root');
+            return {
+                hasRoot: !!root,
+                rootChildren: root ? root.children.length : 0,
+                rootContent: root ? root.textContent.slice(0, 100) : 'no root',
+                totalElements: document.querySelectorAll('*').length,
+                hasInputs: !!document.querySelector('input'),
+                hasForms: !!document.querySelector('form'),
+                hasButtons: !!document.querySelector('button')
+            };
+        "#;
+        
+        match client.execute(script, vec![]).await {
+            Ok(result) => Ok(format!("{:?}", result)),
+            Err(_) => Ok("Unable to get DOM state".to_string())
+        }
     }
 }
