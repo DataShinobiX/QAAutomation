@@ -45,7 +45,7 @@ class AzureOpenAIProvider:
             from openai import AzureOpenAI
             
             api_key = os.getenv("AZURE_OPENAI_API_KEY", 
-                               "3bN0vkkmFI1bew2EXL1r0pNc7jxLv7XjZ3isd1tRduzxmiNYx0WlJQQJ99ALAC5RqLJXJ3w3AAABACOGUaC9")
+                               "key")
             endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", 
                                 "https://opticustest.openai.azure.com/")
             

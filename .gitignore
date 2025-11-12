@@ -281,4 +281,6 @@ override.*
 run/
 pids/
 
-.claude/
+/.claude
+
+/docs
